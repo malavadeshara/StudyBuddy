@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
         },
     },
 
-    email : {
+    email: {
         type: String,
         required: true,
         unique: true,
@@ -35,8 +35,15 @@ const userSchema = new mongoose.Schema({
         default: false,
     },
 
+    Tasks: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Task",
+        }
+    ],
+
     // otp: String,
-    
+
     // otpExpiry: Date
 });
 

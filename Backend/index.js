@@ -2,6 +2,7 @@
 const express = require("express");
 const app = express();
 const userRoutes = require("./Routes/user.routes");
+const taskRoutes = require("./Routes/task.routes");
 const cookieParser = require("cookie-parser");
 
 // PORT Configuration
@@ -22,3 +23,4 @@ app.listen(PORT, () => {
 });
 
 app.use("/user", userRoutes);
+app.use("/task", taskRoutes);
