@@ -1,11 +1,12 @@
 const User = require("../Models/User");
-const checkUserExist = require("../utils/user.utils");
+const { checkUserExistByEmail, checkUserExist } = require("../utils/user.utils");
 const { generateOtp } = require("../utils/otp.utils");
 const { sendEmail } = require("../utils/sendMail");
 const tempUsers = require("../utils/tempStorage");
 
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const jwt = require("jsonwebtoken")
 
 exports.registerUser = async (req, res, next) => {
     // fetch data from request body
@@ -70,7 +71,7 @@ exports.registerUser = async (req, res, next) => {
     const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes from now
 
     // send otp to user email
-    await sendEmail(email, "Your OTP", `Your OTP is: ${otp}`);
+    await sendEmail(email, "OTP Varification", `Your OTP is: ${otp}`);
 
     // hash password for security
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -140,6 +141,11 @@ exports.verifyOtp = async (req, res) => {
         });
 
         await newUser.save();
+
+        // sending userinfo to user via email address
+        let text = `Hello ${tempUser.name["firstName"]} ${tempUser.name["lastName"]}!, You have successfully registered with SmartStudyMate.`;
+        await sendEmail(tempUser.email, "Registration Successful", text);
+
         tempUsers.delete(email); // Clean up
 
         return res.status(200).json({
@@ -155,3 +161,98 @@ exports.verifyOtp = async (req, res) => {
         });
     }
 };
+
+// Login controller
+exports.loginUser = async (req, res) => {
+    try {
+        // fetch data from request body
+        const { email, password } = req.body;
+
+        // validation
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
+
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email",
+            });
+        }
+
+        // Check if user already exists
+        const { exists, message, error, user } = await checkUserExistByEmail(email);
+
+        if (exists) {
+            try {
+                // check for correct password
+                const correctPassword = await bcrypt.compare(password, user.password);
+
+                if (!correctPassword) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Incorrect password",
+                    });
+                } else {
+                    const payload = {
+                        id: user._id,
+                        email: user.email,
+                    }
+
+                    // token creation
+                    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+                        expiresIn: "24h",
+                    });
+
+                    user.token = token;
+                    user.password = undefined;
+
+                    // create cookie and send response
+                    const options = {
+                        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+                        httpOnly: true,
+                    }
+
+                    // Set token in cookie
+                    res.cookie("token", token, options);
+
+                    // Set token in response header
+                    res.setHeader("Authorization", `Bearer ${token}`);
+
+                    // Send response
+                    return res.status(200).json({
+                        success: true,
+                        message: "User loggedin successfully",
+                        user,
+                    });
+                }
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Error while checking user",
+                    error,
+                    user
+                });
+            }
+        }
+
+        if (error) {
+            console.log(error);
+            return res.status(500).json({
+                success: false,
+                message: "Error while checking user",
+                error,
+            });
+        }
+
+    } catch (error) {
+        console.error("Error logging in user:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong, Please try again later",
+        });
+    }
+}

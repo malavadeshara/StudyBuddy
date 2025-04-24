@@ -1,7 +1,8 @@
 // APP Creation
 const express = require("express");
 const app = express();
-const userRoutes = require("./Routes/user.routes")
+const userRoutes = require("./Routes/user.routes");
+const cookieParser = require("cookie-parser");
 
 // PORT Configuration
 require("dotenv").config();
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(express.json());
+app.use(cookieParser());
 
 // Database Connection
 const db = require("./Config/database");
