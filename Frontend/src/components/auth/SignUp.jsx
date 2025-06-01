@@ -16,7 +16,7 @@ const Signup = () => {
   }, []);
 
   return (
-    <div className='h-screen w-full flex items-center justify-center bg-gradient-to-r from-gray-50 via-[#f59e0b]/10 to-[#f59e0b]/20 relative overflow-hidden'>
+    <div className='h-[100vh] w-full flex items-center justify-center bg-gradient-to-r from-gray-50 via-[#f59e0b]/10 to-[#f59e0b]/20 relative overflow-hidden'>
 
       {/* Moving Object Behind the Glass */}
       <div
