@@ -60,7 +60,7 @@ const Signup = () => {
             <p className='font-bold text-2xl text-shadow-md'>Sign Up</p>
 
             <div className='w-full flex flex-col gap-6'>
-              <div className='w-full flex gap-12'>
+              <div className='w-full flex gap-10 pr-10'>
                 <label htmlFor="firstname" className='w-[50%] flex flex-col gap-2 font-normal text-lg'>
                   <p>First Name</p>
                   <input
@@ -86,7 +86,7 @@ const Signup = () => {
 
               <div className='w-full flex flex-col gap-6'>
                 <label htmlFor="email" className='flex flex-col gap-2 font-normal text-lg'>
-                  <p>Email</p>
+                  <p>Email Address</p>
                   <input
                     type="email"
                     id="email"
